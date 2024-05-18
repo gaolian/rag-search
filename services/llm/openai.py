@@ -3,6 +3,15 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core import ServiceContext
 
+#from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+
+
+def decorator(func):
+    def wrapper(*args, **kwargs):
+        print("params:", args, kwargs)
+        return func(*args, **kwargs)
+    return wrapper
+
 
 def get_service_context():
     api_key = os.getenv("OPENAI_API_KEY")
@@ -21,6 +30,10 @@ def get_service_context():
         api_key=api_key,
         api_base=api_base,
     )
+
+    # embed_engine =HuggingFaceEmbedding(
+    #     model_name="BAAI/bge-small-en-v1.5"
+    # )
 
     service_context = ServiceContext.from_defaults(
         llm=llm_engine,

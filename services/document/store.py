@@ -1,3 +1,4 @@
+import time
 from llama_index.legacy import Document, VectorStoreIndex
 from llama_index.legacy.node_parser import SimpleNodeParser
 from services.vdb.zilliz import get_storage_context
@@ -6,6 +7,9 @@ from utils.hash import md5
 
 
 def store_results(results):
+    time_records = []
+    time_records.append(('time_start', time.perf_counter()))
+
     documents = []
     for result in results:
         document = build_document(result=result)
@@ -17,9 +21,11 @@ def store_results(results):
             result["link"],
             len(documents),
         )
+    time_records.append(('time_build_docs', time.perf_counter()))
 
     nodes = build_nodes(documents=documents)
     print("nodes count", len(nodes), len(documents))
+    time_records.append(('time_build_nodes', time.perf_counter()))
 
     # index = VectorStoreIndex(nodes)
     # index.storage_context.persist(persist_dir="./storage")
@@ -32,6 +38,12 @@ def store_results(results):
                              service_context=service_context)
 
     print("build index ok", storage_context)
+    time_records.append(('time_build_index', time.perf_counter()))
+
+    for i in range(1, len(time_records)):
+        cur_record = time_records[i]
+        last_record = time_records[i-1]
+        print("- time cost %s: %.6f" % (cur_record[0], cur_record[1]-last_record[1]))
 
     return index
 
